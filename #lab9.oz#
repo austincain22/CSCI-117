@@ -37,15 +37,16 @@ fun {ScanL L F Z}
    A = {NewCell Z}
    fun {ScanH L}
       %Your code goes here
-      case L of X|nil then @A|{F @A X}|nil
-      [] X|Xr then
-	 @A|{ScanL Xr F {F @A X}}
-      end
+      @A|case L of nil then nil
+	 [] X|Xr then
+	    A := {F @A X}
+	    {ScanH Xr}
+	 end
    end
 in
    {ScanH L}
 end
-%{Browse {ScanL [1 2 3] Add 0}}
+{Browse {ScanL [1 2 3] Add 0}}
 
 
 /* Question 2: Assuming a memory cell A points to a list of integers, 
@@ -190,7 +191,7 @@ Second: 6
 and returns the average for both flatting function of list creation operations for these nested lists. 
 Test this on the list containing all possible nested lists of 3 elements with nesting depth 2,
  i.e., [[1 2 3]  [[1] 2 3]  [[1] [2] 3] … and give the average for both of the flattening functions. */
-[[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [1 2 3]]
+[[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]
 
 
 
