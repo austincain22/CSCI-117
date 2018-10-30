@@ -130,21 +130,31 @@ GenF = {Generate}
 /* (a) Use a memory cell to count the number of list creation operations i.e. when ‘|’ is used, 
 within the two versions of flattening a nested list from lab 5. */
 
+
 declare
 A = {NewCell 0}
+fun {Append Xs Ys}
+   case Xs
+   of nil then Ys
+   [] X|Xr then A:=@A+1
+      X|{Append Xr Ys}
+   end
+end
+
+declare
 fun {Flatten Xs} 
   case Xs
   of nil then nil
   [] X|Xr andthen {IsList X} then
-     A:=@A+1
     {Append {Flatten X} {Flatten Xr}} 
   [] X|Xr then
      A:=@A+1
     X|{Flatten Xr}
   end 
 end
-local Y = {Flatten [[1] [2] [3] 4 [5 6]]} in
-{Browse @A} end
+local Y = {Flatten [[1 2 3] [1 2] [1 2 [2 3 4]] 3 4]} in
+   {Browse @A}
+end
 
 declare
 B = {NewCell 0}
@@ -163,18 +173,19 @@ fun {Flatten Xs}
   end Ys
   in {FlattenD Xs Ys#nil} Ys
 end
-local X = {Flatten [[1] [2] [3] 4 [5 6]]} in
-{Browse @B} end
+local X = {Flatten [[1 2 3] [1 2] [1 2 [2 3 4]] 3 4]} in
+   {Browse @B}
+end
 
 /* (b) Verify that your program is correct by running the example [[1 2 3] [1 2] [1 2 [2 3 4]] 3 4] from lab 5, 
 												       along with three other examples of your choosing. */
 /*
 List: [[1 2 3] [1 2] [1 2 [2 3 4]] 3 4]
-First: 16
+First: 25
 Second: 12
 
 List: [1 2 [3 4] [5 6 [7] 8]]
-First: 11
+First: 15
 Second: 8
 
 List: [1 2 3 4]
@@ -182,7 +193,7 @@ First: 4
 Second: 4
 
 List: [[1] [2] [3] 4 [5 6]]
-First: 10
+First: 11
 Second: 6
 */
 
@@ -191,16 +202,22 @@ Second: 6
 and returns the average for both flatting function of list creation operations for these nested lists. 
 Test this on the list containing all possible nested lists of 3 elements with nesting depth 2,
  i.e., [[1 2 3]  [[1] 2 3]  [[1] [2] 3] … and give the average for both of the flattening functions. */
-
 declare
 A = {NewCell 0}
+fun {Append Xs Ys}
+   case Xs
+   of nil then Ys
+   [] X|Xr then A:=@A+1
+      X|{Append Xr Ys}
+   end
+end
+
 fun {Flatten Xs} 
   case Xs
   of nil then nil
   [] X|Xr andthen {IsList X} then
      A:=@A+1
      {Append {Flatten X} {Flatten Xr}}
-     %{Browse ({Int.toFloat @A}/{Int.toFloat 13})}
   [] X|Xr then
      A:=@A+1
     X|{Flatten Xr}
@@ -213,8 +230,8 @@ end
 
 /*
 
--Total: 71
--Avg:  5.4615
+-Total: 135
+-Avg:  10.385
 
 */
 
