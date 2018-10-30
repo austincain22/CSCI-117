@@ -193,7 +193,22 @@ Test this on the list containing all possible nested lists of 3 elements with ne
  i.e., [[1 2 3]  [[1] 2 3]  [[1] [2] 3] … and give the average for both of the flattening functions. */
 [[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]
 
-
+declare
+A = {NewCell 0}
+fun {Flatten Xs} 
+  case Xs
+  of nil then nil
+  [] X|Xr andthen {IsList X} then
+     A:=@A+1
+     {Append {Flatten X} {Flatten Xr}}
+     {Browse ({Int.toFloat @A}/{Int.toFloat 13})}
+  [] X|Xr then
+     A:=@A+1
+    X|{Flatten Xr}
+  end 
+end
+local Y = {Flatten [[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]} in
+{Browse @A} end
 
 
 
