@@ -158,7 +158,7 @@ fun {Flatten Xs}
       {FlattenD Xr Y2#Y4}
     [] X|Xr then Y1 Y2 in
        B:=@B+1
-      Ds=(X|Y1)#Y2 {FlattenD Xr Y1#y2}
+      Ds=(X|Y1)#Y2 {FlattenD Xr Y1#Y2}
     end 
   end Ys
   in {FlattenD Xs Ys#nil} Ys
@@ -191,7 +191,6 @@ Second: 6
 and returns the average for both flatting function of list creation operations for these nested lists. 
 Test this on the list containing all possible nested lists of 3 elements with nesting depth 2,
  i.e., [[1 2 3]  [[1] 2 3]  [[1] [2] 3] … and give the average for both of the flattening functions. */
-[[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]
 
 declare
 A = {NewCell 0}
@@ -201,17 +200,50 @@ fun {Flatten Xs}
   [] X|Xr andthen {IsList X} then
      A:=@A+1
      {Append {Flatten X} {Flatten Xr}}
-     {Browse ({Int.toFloat @A}/{Int.toFloat 13})}
+     %{Browse ({Int.toFloat @A}/{Int.toFloat 13})}
   [] X|Xr then
      A:=@A+1
     X|{Flatten Xr}
   end 
 end
 local Y = {Flatten [[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]} in
-{Browse @A} end
+   {Browse @A}
+   {Browse {Int.toFloat @A}/{Int.toFloat 13}} 
+end
+
+/*
+
+-Total: 71
+-Avg:  5.4615
+
+*/
+
+declare
+B = {NewCell 0}
+fun {Flatten Xs}
+  proc {FlattenD Xs ?Ds}
+    case Xs
+    of nil then Y in Ds=Y#Y
+    [] X|Xr andthen {IsList X} then Y1 Y2 Y4 in
+      Ds=Y1#Y4 
+      {FlattenD X Y1#Y2}
+      {FlattenD Xr Y2#Y4}
+    [] X|Xr then Y1 Y2 in
+       B:=@B+1
+      Ds=(X|Y1)#Y2 {FlattenD Xr Y1#Y2}
+    end 
+  end Ys
+  in {FlattenD Xs Ys#nil} Ys
+end
+local X = {Flatten [[1 2 3]  [[1] 2 3]  [[1] [2] 3] [[1] 2 [3]] [[1] [2] [3]] [1 2 [3]] [1 [2] [3]] [1 [2] 3] [[1 2] 3] [[1 2] [3]] [1 [2 3]] [[1] [2 3]] [[1 2 3]]]} in
+   {Browse @B}
+   {Browse {Int.toFloat @B}/{Int.toFloat 13}}
+end
 
 
+/*
 
+-Total: 39
+-Avg: 3
 
-
-
+*/
