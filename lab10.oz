@@ -5,23 +5,54 @@
 % Question 1: Abstractions and memory management. Consider the following ADT which allows to collect information together into a list. The ADT has three operations. The call C={NewCollector} creates a new collector C. The call {Collect C X} adds X to C’s collection. The call L={EndCollect C} returns the final list containing all collected items in the order they were collected. Here are two ways to implement collectors that we will compare:
 
 % •	C is a cell that contains a pair H#T, where H is the head of the collected list and T is its unbound tail. Collect is implemented as: 
-
+declare
 proc {Collect C X} H T in
   {Exchange C H#(X|T) H#T}
 end
 
 % (a) Implement the NewCollector and EndCollect operations with this representation.
+fun{NewCollector}
+   local H in
+      {NewCell H#H}
+   end
+end
 
+fun{EndCollect A}
+   case @A of (X|Xs)#T then T = nil end
+   (@A).1
+end
+
+A = {NewCollector}
+{Collect A 3}
+{Collect A 5}
+L = {EndCollect A}
+{Inspect L}
+     
 
 
 % •	C is a pair H#T, where H is the head of the collected list and T is a cell that contains its unbound tail. Collect is implemented as:
-
-   proc {Collect C X} T in
-	  {Exchange C.2 X|T T}
+declare
+   proc {Collect2 C X} T in
+	  {Exchange C.2 X|T T}  %old C.2 = 3|T new C.2 = T  
    end
 
 % (b) Implement the NewCollector and EndCollect operations with this representation.
+   fun {NewCollector2}
+      local H T in
+	 H#{NewCell H}
+      end
+   end
+   fun {EndCollector2 A}
+      case A of H#X then @X = nil end
+      A.1
+   end
 
+   A = {NewCollector2}
+   {Collect2 A 3}
+   {Collect2 A 5}
+   L = {EndCollector2 A}
+   {Inspect L}
+   
 
 
 % (c) Bonus: Describe the process in which values are being collected, in relation to the store, and give some insight into the differences between the two implementations. 
@@ -35,7 +66,7 @@ end
 procedure swap(callbyname x,y:integer); 
 var t:integer;
 begin
-   t:=x; x:=y; y:=t
+t:=x; x:=y; y:=t
 end;
 
 var a:array [1..10] of integer;
@@ -52,9 +83,22 @@ writeln(a[1], a[2]);
 
 
 % (b) Code the example in the stateful computation model. Use the following encoding of array[1..10]:
+declare I = {NewCell 1}  
+A={MakeTuple array 10}
+for J in 1..10 do A.J={NewCell 0} end
+(A.1) := 2
+(A.2) := 1
 
-	A={MakeTuple array 10}
-	for J in 1..10 do A.J={NewCell 0} end
+proc {Swap X Y}
+   local T in
+      T = @{X}
+      {X} := @{Y}
+      {Y} := T
+   end
+end
+{Swap fun{$} I end
+      fun{$}A.@I end}
+{Browse @(A.2)}
 
 % That is, code the array as a tuple of cells.
 
@@ -69,7 +113,26 @@ writeln(a[1], a[2]);
 
 % Question 3: Call by need. With call by name, the argument is evaluated again each time it is needed. For this exercise, 
 % (a) redo the swap example of the previous exercise with call by need instead of call by name. 
+declare Z V I = {NewCell 1}  
+A={MakeTuple array 10}
 
+for J in 1..10 do A.J={NewCell 0} end
+(A.1) := 2
+(A.2) := 1
+
+proc {Swap X Y}
+   Z = {Y}
+   V = {X}
+in
+   local T in
+      T = @V
+      V := @Z
+      Z := T
+   end
+end
+{Swap fun{$} I end
+      fun{$}A.@I end}
+{Browse @(A.2)}
 
 
 % (b)Does the counterintuitive behavior still occur? If not, can similar problems still occur with call by need by changing the definition of swap?
@@ -79,12 +142,48 @@ writeln(a[1], a[2]);
 
 
 % Question 4: Extensible arrays. (P 443) The extensible array of Section 6.5 only extends the array upwards. For this exercise, modify the extensible array so it extends the array in both directions.
+declare
+fun {NewExtensibleArray L H Init}
+   A={NewCell {NewArray L H Init}}#Init
+   proc {CheckOverflow I}
+      Arr=@(A.1)
+      Low={Array.low Arr}
+      High={Array.high Arr}
+   in
+      if I>High then
+	 High2=Low+{Max I 2*(High-Low)}
+	 Arr2={NewArray Low High2 A.2}
+      in
+	 for K in Low..High do Arr2.K:=Arr.K end
+	 (A.1):=Arr2
+      end
+      if I<low then
+	 if I>0 then
+	    Low2 = Low-{Max I 2*(High-Low)}
+	    Arr2 = {NewArray Low2 High A.2}
+	 end
+      end
+      in
+	 for K in Low..High do Arr2.K:=Arr.K end
+	 (A.1):=Arr2
+      end
+   end
+   proc {Put I X}
+      {CheckOverflow I}
+      @(A.1).I:=X
+   end
+   fun {Get I}
+      {CheckOverflow I}
+      @(A.1).I
+   end
+in
+   extArray(get:Get put:Put)
+end
 
 
 
 
-
-% Question 5: Re-implement the dictionary from the book (P 199) that uses Key#Value pairs and linear search. Keys do not have to be integers, so the input will simply put new values at the end of the dictionary, and the get, will go through the dictionary with a linear seach. Use state to store the dictionary values, and bundle the operations. (Similar to the Stack bundle example from the book).
+% Question 5: Re-implement the dictionary from the book (P 199) that uses Key#Value pairs and linear search. Keys do not have to be integers, so the input will simply put new values at the end of the dictionary, and the get, will go through the dictionary with a linear seach. Use state to store the dictionary values, and bundle the operations. (Similar to the Stack bundle example from the book).record should contain push, get, domain
 
 
 
