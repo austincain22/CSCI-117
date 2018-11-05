@@ -156,16 +156,14 @@ fun {NewExtensibleArray L H Init}
       in
 	 for K in Low..High do Arr2.K:=Arr.K end
 	 (A.1):=Arr2
-      end
-      if I<low then
+      elseif I<low then
 	 if I>0 then
 	    Low2 = Low-{Max I 2*(High-Low)}
 	    Arr2 = {NewArray Low2 High A.2}
+	 in
+	    for K in Low..High do Arr2.K:=Arr.K end
+	    (A.1):=Arr2
 	 end
-      end
-      in
-	 for K in Low..High do Arr2.K:=Arr.K end
-	 (A.1):=Arr2
       end
    end
    proc {Put I X}
@@ -184,8 +182,51 @@ end
 
 
 % Question 5: Re-implement the dictionary from the book (P 199) that uses Key#Value pairs and linear search. Keys do not have to be integers, so the input will simply put new values at the end of the dictionary, and the get, will go through the dictionary with a linear seach. Use state to store the dictionary values, and bundle the operations. (Similar to the Stack bundle example from the book).record should contain push, get, domain
+declare
+fun {NewDictionary} nil end
+fun {Put Ds Key Value}
+   {Append Ds Value}
+   /*case Ds
+   of nil then [Key#Value]
+   [] (K#V)|Dr andthen Key==K then
+      (Key#Value) | Dr
+   [] (K#V)|Dr andthen K>Key then
+      (Key#Value)|(K#V)|Dr
+   [] (K#V)|Dr andthen K<Key then
+      (K#V)|{Put Dr Key Value}
+   end*/
+end
+fun {CondGet Ds Value Default}
+   case Ds of nil then Default
+   [] V|Dr andthen Value == V then V
+   [] V|Dr then {CondGet Dr Value Default}
+   end
+   /*case Ds
+   of nil then Default
+   [] (K#V)|Dr andthen Key==K then
+      V
+   [] (K#V)|Dr andthen K>Key then
+      Default
+   [] (K#V)|Dr andthen K<Key then
+      {CondGet Dr Key Default}
+   end*/
+end
+fun {Domain Ds}
+   {Map Ds fun {$ K#_} K end}
+end
 
 
+local
+   fun {StackOps S}
+      fun {Put X} {StackOps X|S} end
+      fun {CondGet ?E}
+	 case S of X|S1 then E=X {StackOps S1} end
+      end
+      fun {Domain} S==nil end
+   in ops(put:Put get:CondGet domain:Domain) end
+in
+   fun {NewStack} {StackOps nil} end
+end
 
 
 
