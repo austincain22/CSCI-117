@@ -56,10 +56,13 @@ declare
 
 
 % (c) Bonus: Describe the process in which values are being collected, in relation to the store, and give some insight into the differences between the two implementations. 
-
-
-
-
+/*
+   First implementation:
+	    original value is H#H so when you pass that into collect C is H#H then you set H#(X|T) = H#H, So H now corresponds to (X|T) then you do H#T=H#H
+            which will be a difference list that looks like (X|T)#T. More numbers will get added to the end by using differnece lists that get set to T
+Second implementation:
+	  original value is H#cellH so C is H#cellH when passed into the function. C.2 just gets the cellH from the pair and sets that equal to X|T
+*/
 
 % Question 2: Call by name. Section 6.4.4 shows how to code call by name in the stateful computation model. For this exercise, consider the following example taken from [56]:
 /*
@@ -80,7 +83,9 @@ writeln(a[1], a[2]);
 % This example shows a curious behavior of call by name. Running the example does not swap i and a[i], as one might expect. This shows an undesirable interaction between destructive assignment and the delayed evaluation of an argument.
 % (a) Explain the behavior of this example using your understanding of call by name.
 
-
+/*
+This call by name swap function won't actually swap the values because it doesn't effect the actual elements a[1] or a[2]
+*/
 
 % (b) Code the example in the stateful computation model. Use the following encoding of array[1..10]:
 declare I = {NewCell 1}  
@@ -102,13 +107,10 @@ end
 {Browse @(A.1)}
 % That is, code the array as a tuple of cells.
 
-
-
 % (c) Explain the behavior again in terms of your coding.
-
-
-
-
+/*
+This call by name swap will swap the values inside the function, but it doesn't actually swap the elements
+*/
 
 
 % Question 3: Call by need. With call by name, the argument is evaluated again each time it is needed. For this exercise, 
@@ -134,10 +136,12 @@ end
       fun{$}A.@I end}
 {Browse @(A.2)}
 {Browse @(A.1)}
+{Browse @I}
 
 % (b)Does the counterintuitive behavior still occur? If not, can similar problems still occur with call by need by changing the definition of swap?
-
-
+/*
+In this swap by need function it actually swaps I, which is 1, with A.1 which is 2
+*/
 
 
 
@@ -185,28 +189,26 @@ end
 declare
 fun {NewDictionary}
    Ds = {NewCell nil}
+   fun {PutHelp Ds Key Value}
+      case @Ds
+      of nil then [Key#Value]
+      [](K#V)|Dr andthen Key==K then
+	 (Key#Value)|Dr
+      [] (K#V)|Dr then
+	 (K#V)|{PutHelp Dr Key Value}
+      end
+   end
    fun {Put Key Value}
-      local PutHelp in
-	 Ds := fun {PutHelp Ds Key Value}
-		  case @Ds
-		  of nil then [Key#Value]
-		  [](K#V)|Dr andthen Key==K then
-		     (Key#Value)|Dr
-		  [] (K#V)|Dr then
-		     (K#V)|{PutHelp Dr Key Value}
-		  end
-	       end
+	 Ds := {PutHelp Ds Key Value}
+   end
+   fun{GetHelper Ds Key Default}
+      case @Ds of nil then Default
+      [] (K#V)|Dr andthen Key == K then V
+      [] (K#V)|Dr then {GetHelper {NewCell Dr} Key Default}
       end
    end
    fun {CondGet Key Default}
-      local GetHelper in
-	 fun{GetHelper Ds Key Default}
-	    case @Ds of nil then Default
-	    [] (K#V)|Dr andthen Key == K then V
-	    [] (K#V)|Dr then {GetHelper Dr Key Default}
-	    end
-	 end
-      end
+	 {GetHelper Ds Key Default}
    end
    fun {Domain Ds}
       {Map @Ds fun {$ K#_} K end}
@@ -215,9 +217,14 @@ in
    ops(put:Put condget:CondGet domain:Domain)
 end
 Dict = {NewDictionary}
-{Dict.put 1 2}
-{Dict.get 1 5}
+{Browse {Dict.put 1 2}}
+{Browse {Dict.condget 1 5}}
+{Browse {Dict.condget 2 5}}
 
+
+
+
+/*
 % Question 6: 
 
 declare A Temp Left Right
