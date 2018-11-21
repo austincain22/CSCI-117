@@ -215,4 +215,84 @@ Yes, because the algorithm will still go to them but no edges will be formed fro
 %4c
 /*
 In the stateful algorithm it sets an edge to true every time even though it may have already been true.
+										*/
+
+
+
+
+
+
+
+% Question 6 from lab 10: 
+
+declare A Temp Left Right
+
+proc {Merge A Temp Left Right Mid}
+   local I1 = {NewCell Left}
+   I2 = {NewCell Mid+1} in
+   for Curr in Left..Right do
+		%*****1******
+      if @I1 == Mid+1 then             % Left Sublist exhausted
+         A.Curr := Temp.@I2
+         I2:=@I2+1
+      elseif @I2 > Right then          % Right sublist exhausted
+         A.Curr := Temp.@I1
+         I1:=@I1+1
+      elseif Temp.@I1 =< Temp.@I2 then % Get smaller value
+         A.Curr := Temp.@I1
+         I1:=@I1+1
+      else
+         A.Curr := Temp.@I2
+         I2:=@I2+1
+      end
+   end
+   end
+end
+
+proc {MergeSort A Temp Left Right}
+   if (Left == Right) then skip        % List has one record
+   else
+   local Mid = (Left + Right) div 2 in % Select midpoint
+      {MergeSort A Temp Left Mid}      % MergeSort First Half
+      {MergeSort A Temp Mid+1 Right}   % MergeSort Second Half
+      for I in Left..Right do 	    % Copy subarray
+	   Temp.I := A.I end 
+      {Merge A Temp Left Right Mid}    % Merge back to A
+   end
+   end
+end
+
+Left = 0
+Right = 9
+A = {NewArray Left Right 0}
+for I in Left..Right do A.I := (I mod 3) end
+Temp = {NewArray Left Right 0}
+{MergeSort A Temp Left Right}
+for I in Left..Right do {Browse A.I} end
+
+/*
+Here is the general invariant for MergeSort: 
+
+1.	If left <= right, then mergesort(A, temp, left, right) terminates and A[left..right] is sorted.
+
+Here are the invariants that are true each time we get to position *1* in the Merege function
+1.	Both temp[left..mid] and temp[mid+1..right] are sorted
+2.	A[left..curr-1] is sorted and contains the elements of temp[left..i1-1] and temp[mid+1..i2-1]
+3.	temp[i1] >= temp[mid+1..i2-1]
+4.	temp[i2] >= temp[left..i1-1].
+
+This proof is done by strong induction on n = right - left
+Complete the proof be verifying the following steps:
+1.	The recursive calls are on lists smaller than size n
+-when it makes the recursive call it splits the array in half constantly until it gets down to one element so it's constistently getting smaller.
+
+2.	The invariants are true in the base case when Merge is first called
+-The array from low to high is sorted.
+					       
+3.	The invariants are maintained in the recursive case, showing that if the invariants are true, they will be true for the next iteration of the for loop
+-The list is progressively getting smaller and sorted along the way so it will sort it accordingly.
+
+
+4.	The invariants imply the MergeSort invariant upon termination, when the loop exits 
+-absally when the loop exits then the array from low to high will be sorted.
 */
