@@ -214,5 +214,5 @@ Yes, because the algorithm will still go to them but no edges will be formed fro
 
 %4c
 /*
-In the stateful algorithm it sets an edge to true every time even though it may have already been true.
+
 */
